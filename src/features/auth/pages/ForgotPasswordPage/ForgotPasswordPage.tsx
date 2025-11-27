@@ -9,7 +9,7 @@ import {
   useGenerateOtpMutation,
   useVerifyOtpMutation,
   useResetPasswordMutation,
-} from '@api/endpoints/userApi';
+} from '@features/auth/api/authApi';
 import { showSnackbar } from '@components/snackbarUtils';
 
 const ForgotPasswordPage: React.FC = () => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Paper,
@@ -18,7 +18,7 @@ import styles from './LoginPage.module.scss';
 import { setCredentials } from '../../authSlice';
 import Cookies from 'js-cookie';
 import { LoginRequest } from '../../../../types/auth';
-import { useLoginMutation, useVerifyOtpMutation } from '@api/endpoints/userApi';
+import { useLoginMutation, useVerifyOtpMutation } from '@features/auth/api/authApi';
 import { showSnackbar } from '@components/snackbarUtils';
 import { useAppDispatch } from '@app/hooks';
 import { LOGIN_CONTENT } from '@utils/uiContent';
@@ -26,7 +26,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [login] = useLoginMutation();
-  const [isLoginLoading, setIsLoginLoading] = useState(false);
+  const [isLoginLoading, setIsLoginLoading] = useState(true);
   const [isPasswordExpired, setIsPasswordExpired] = useState(false);
   const [verifyOtp, { isLoading: verifyOtpLoading }] = useVerifyOtpMutation();
   const [step, setStep] = useState<'login' | 'otp'>('login');
@@ -36,6 +36,26 @@ const Login: React.FC = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const handler = (e: AnimationEvent) => {
+      if (e.animationName === 'autofillStart') {
+        const email = (document.querySelector('input[type="email"]') as HTMLInputElement)?.value;
+        const password = (document.querySelector('input[type="password"]') as HTMLInputElement)
+          ?.value;
+
+        if (email || password) {
+          setLoginData({
+            email: email ?? '',
+            password: password ?? '',
+          });
+        }
+      }
+    };
+
+    document.addEventListener('animationstart', handler);
+    return () => document.removeEventListener('animationstart', handler);
+  }, []);
 
   const handleBackToLogin = () => {
     setStep('login');
@@ -50,27 +70,36 @@ const Login: React.FC = () => {
     }
     setIsLoginLoading(true);
     const { email, password } = loginData;
+    let resValidate: any = {
+      isSuccess: false,
+    };
     try {
       const res: any = await login({ email, password }).unwrap(); // unwrap() to handle the result
       if (res.status_code == 200) {
         setError('');
         // setIsLoginLoading(true);
         setIsLoginLoading(false);
-        showSnackbar({
-          message: 'OTP sent successfully',
-          severity: 'success',
-          duration: 3000,
-          position: { vertical: 'bottom', horizontal: 'right' },
-        });
+        resValidate.isSuccess = true;
         setStep('otp');
       } else {
         setIsLoginLoading(false);
         setIsPasswordExpired(res?.is_expired);
+        resValidate.isSuccess = false;
+        resValidate.message = res.message;
       }
     } catch (err: any) {
       console.error('Login failed:', err);
+      resValidate.isSuccess = true;
+      resValidate.message = true;
       setIsLoginLoading(false);
     }
+
+    showSnackbar({
+      message: resValidate.isSuccess ? 'OTP sent successfully' : resValidate.message,
+      severity: resValidate.isSuccess ? 'success' : 'error',
+      duration: !resValidate.isSuccess ? 5000 : 3000,
+      position: { vertical: 'bottom', horizontal: 'right' },
+    });
   };
 
   const handleResendOTP = () => {
@@ -86,17 +115,13 @@ const Login: React.FC = () => {
       if (res.status_code == 200) {
         dispatch(
           setCredentials({
-            token: res.data.token,
-            user: {
-              id: res.data.role_id,
-              userName: res.data.user_name,
-              email: loginData.email,
-            },
+            token: res.access_token,
+            user: res.user,
           }),
         );
-        const expiryDate = new Date(res.data.token_expires_at);
-        Cookies.set('token', res.data.token, { expires: expiryDate });
-        Cookies.set('sessionid', res.data.session_key, { expires: expiryDate });
+        const expiryDate = new Date(res.user.token_expires_at);
+        Cookies.set('token', res.access_token, { expires: expiryDate });
+        Cookies.set('sessionid', res.session_key, { expires: expiryDate });
         resValidate.isLoggedIn = true;
       }
     } catch (error: any) {
@@ -116,6 +141,22 @@ const Login: React.FC = () => {
 
   const forgotResetHandler = () => {
     navigate(`/forgot-password/${isPasswordExpired ? 'reset' : 'forgot'}`);
+  };
+
+  const onchangeHandler = (event: any) => {
+    setLoginData({ ...loginData, [event.target.name]: event.target.value });
+
+    if (!loginData.email.trim() || !loginData.password.trim()) {
+      setIsLoginLoading(false);
+    } else {
+      setIsLoginLoading(true);
+    }
+  };
+
+  const getLoginButtonLabel = () => {
+    if (!loginData.email.trim() || !loginData.password.trim()) return 'Login';
+    if (isLoginLoading) return 'Logging In...';
+    return 'Login';
   };
 
   return (
@@ -163,8 +204,9 @@ const Login: React.FC = () => {
                         fullWidth
                         type="email"
                         value={loginData.email}
-                        onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                        onChange={(e) => onchangeHandler(e)}
                         required
+                        name="email"
                         autoComplete="email"
                         placeholder="Enter your email here"
                         variant="outlined"
@@ -179,7 +221,8 @@ const Login: React.FC = () => {
                         fullWidth
                         type={showPassword ? 'text' : 'password'}
                         value={loginData.password}
-                        onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                        onChange={(e) => onchangeHandler(e)}
+                        name="password"
                         required
                         autoComplete="current-password"
                         placeholder="Enter your password here"
@@ -212,7 +255,7 @@ const Login: React.FC = () => {
                       disabled={isLoginLoading}
                       className={styles.loginButton}
                     >
-                      {isLoginLoading ? 'Logging In...' : 'Login'}
+                      {getLoginButtonLabel()}
                     </Button>
                     <Box sx={{ textAlign: 'center', mt: 2 }}>
                       <Typography

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import DataTable from '@components/DataTable';
 import { allLoansConfigColumns } from '@utils/all-loans/all-loans-list';
 import usePageMeta from '@hooks/usePageMeta';
-import { useGetAllLoansQuery } from '@api/endpoints/allLoansApi';
+import { useGetAllLoansQuery } from '@features/all_loans/api/allLoansApi';
 const AllLoans: React.FC = () => {
   usePageMeta({
     name: 'allLoans',

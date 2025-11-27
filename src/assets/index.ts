@@ -1,3 +1,3 @@
-import Logo from './logo.svg';
+import Logo from '@assets/Logo.svg';
 
 export { Logo };

@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { allLoansApi } from '@api/endpoints/allLoansApi';
+import { allLoansApi } from '@features/all_loans/api/allLoansApi';
 interface AllLoansState {
   columns: any[];
   allLoansList: any[];

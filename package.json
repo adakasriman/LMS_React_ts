@@ -1,9 +1,9 @@
 {
-  "name": "finance-dashboard",
+  "name": "LMS",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "scripts": {
+"scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",

@@ -6,7 +6,7 @@ import { loanPerformanceColumns } from '@utils/dashboard/dashboard-utils';
 import { loanPerformanceList } from '@mocks/dashboard';
 import DataTable from '@components/DataTable';
 import { Box } from '@mui/material';
-import { useGetDashboardDataQuery } from '@api/endpoints/dashboardApi';
+import { useGetDashboardDataQuery } from '@features/dashboard/api/dashboardApi';
 const Overview: React.FC = () => {
   const { data, isLoading, error } = useGetDashboardDataQuery();
   console.log(data, isLoading, error);

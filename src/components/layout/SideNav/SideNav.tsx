@@ -25,7 +25,7 @@ const SideNav: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const user = useSelector((state: RootState) => state.auth.user);
+  const user: any = useSelector((state: RootState) => state.auth.user);
   const handleLogout = () => {
     Cookies.remove('token');
     Cookies.remove('sessionid');
@@ -148,12 +148,12 @@ const SideNav: React.FC = () => {
           <MenuItem disabled className="flex items-center gap-2">
             <Avatar />{' '}
             <Box className="">
-              {user?.userName} ({user?.id})
+              {user?.user_name} ({user?.role_id})
             </Box>
           </MenuItem>
           <Divider />
           <MenuItem disabled className="flex items-center gap-2">
-            <Box className="">{user?.email}</Box>
+            <Box className="">{user?.email_id}</Box>
           </MenuItem>
           <Divider />
           <MenuItem

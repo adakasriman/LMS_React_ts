@@ -1,5 +1,4 @@
-@import "tailwindcss";
-
+@import 'tailwindcss';
 
 /* your custom overrides */
 * {
@@ -12,6 +11,6 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #C2C9CC;
+  background-color: #c2c9cc;
   border-radius: 10px;
 }
