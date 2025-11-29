@@ -252,7 +252,6 @@ const Login: React.FC = () => {
                       fullWidth
                       type="submit"
                       variant="contained"
-                      disabled={isLoginLoading}
                       className={styles.loginButton}
                     >
                       {getLoginButtonLabel()}
